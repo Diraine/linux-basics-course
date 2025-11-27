@@ -24,7 +24,11 @@
     ```
     ssh –l <user> <hostname OR IP Address>
     ```
+ - To login to the remote server with specific username and password and a given port.
 
+    ```
+    ssh -p PORT <user>@<hostname OR IP Address>
+    ```
   #### Password-Less Authentication
 
   - Passwordless authentication can be setup via key-pair authentication in order to login to the remote server with password.
