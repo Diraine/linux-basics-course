@@ -19,6 +19,11 @@
     ssh <user>@<hostname OR IP Address>
     ```
 
+ - To login to the remote server with specific username and password and specific port.
+
+    ```
+    ssh -p PORT <user>@<hostname OR IP Address>
+    ```
     **`-l`** attribute can also be used as 
 
     ```
