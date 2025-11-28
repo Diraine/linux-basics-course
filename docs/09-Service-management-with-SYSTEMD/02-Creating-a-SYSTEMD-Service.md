@@ -1,59 +1,195 @@
-# Creating your own SYSTEMD Service
+# Creating a SYSTEMD Service
 
-- Take me to the [Tutorial](https://kodekloud.com/topic/creating-a-systemd-service/)
+In this guide, we detail how to manage services with SYSTEMD by building a service unit from scratch. We will utilize essential SYSTEMD utilities—specifically, systemctl and journalctl—and conclude with a hands-on lab exercise.
 
-In this lecture we will learn how to create a SYSTEMD Service.
-- All the major distributions, such as Rhel, CentOS, Fedora, Ubuntu, Debian and Archlinux, adopted systemd as their init system.
-- Systemd is a Linux initialization system and service manager that includes features like on-demand starting of daemons, mount and automount point maintenance etc.
-- Systemd also provides a logging daemon and other tools and utilities to help with common system administration tasks.
+Bob’s requirements for the service are as follows:
 
-#### What is a service unit? 
+- A shell script named project-mercury.sh located in /usr/bin must execute as a background service.
+- The service should be enabled to start automatically during boot.
+- The script launches a Python Django application that depends on a PostgreSQL database; therefore, PostgreSQL must be running prior to the application's start.
+- The service must run under a pre-created account called project_mercury rather than the default root user.
+- In case of application failure, the service should restart automatically, waiting 10 seconds between attempts.
+- The service must not restart automatically if it is manually stopped by an administrator.
+- All service events—including start, stop, and errors—must be logged for later analysis.
+- The service should adhere to the graphical.target since Bob’s system defaults to a graphical environment.
+Bob’s colleague, Dave, recommends constructing the service unit file in gradual steps. Follow along with the steps below.
 
-- A file with the .service suffix contains information about a process which is managed by systemd. It is composed by three main sections:
-
-  #### 1.Unit
-
-  - The **`Unit`** section of a .service file contains the description of the unit itself, and information about its behavior and its dependencies: (to work correctly a service can depend on another one). Here we discuss some of the most relevant options which can be used in this section
-  - First of all we have the **`Description`** option. By using this option we can provide a description of the unit. The description will then appear, for example, when calling the systemctl command, which returns an overview of the status of systemd.
-  - Secondly, we have **`Documentation`** option. By using this option we can get the details of the service and documentation related to it.
-  - By using the **`After`** option, we can state that our unit should be started after the units we provide in the form of a space-separated list.
-
-    ```
-    [~]$ cat /etc/systemd/system/project-mercury.service
-    [Unit]
-    Description=Python Django for Project Mercury
-    Documentation=http://wiki.caleston-dev.ca/mercury
-    After=postgresql.service
-    ```
+---
 
 
-  #### 2.Service
+### Step 1. Creating the Basic Service Unit
 
-  - In the **`Service`** section of a service unit, we can specify things as the command to be executed when the service is started, or the type of the service itself.
+Begin by defining a basic service unit file named project-mercury.service under the /etc/systemd/system directory. Initially, the unit file only needs to execute the command in the background using /bin/bash because project-mercury.sh is a Bash script.
 
-    ```
-    [Service]
-    ExecStart=/usr/bin/project-mercury.sh
-    User=project_mercury
-    Restart=on-failure
-    RestartSec=10
-    ```
+Below is the minimal service unit definition:
 
-  #### 3.Install
+```
+[Service]
+ExecStart=/bin/bash /usr/bin/project-mercury.sh
+```
 
-  - This **`Install`** section contains information about the installation of the unit
+To start the service in the background, run the following command (using sudo if necessary):
 
-    ```
-    [Install]
-    WantedBy=graphical.target
-    ```
+```
+sudo systemctl start project-mercury.service
+```
 
-#### How to Start the Service now ?
+Verify that the service is active with:
 
-- The system to detect the changes you have done in the file, we need to reload the daemon and start the service.
+```
+sudo systemctl status project-mercury.service
+```
 
-  ```
-  [~]$ systemctl daemon-reload
+A sample output might look similar to:
 
-  [~]$ systemctl start project-mercury.service
-  ```
+```
+● project-mercury.service
+   Loaded: loaded (/etc/systemd/system/project-mercury.service; static; vendor preset: enabled)
+   Active: active (running) Fri 2020-04-10 00:52:16 EDT; 6min ago
+ Main PID: 25041 (project-mercury.sh)
+   Tasks: 2 (limit: 4915)
+   CGroup: /system.slice/project-mercury.service
+           ├─6494 sleep 60
+           └─25041 /bin/bash /usr/bin/project-mercury.sh
+```
+
+After verifying, you can stop the service by running:
+
+```
+sudo systemctl stop project-mercury.service
+```
+---
+
+
+### Step 2. Enabling the Service on Boot
+
+To automate the start of the service during boot, add an [Install] section to the service unit file. The WantedBy directive ties the service to the graphical target, which corresponds to the current runlevel.
+
+Update your service unit file as follows:
+
+```
+[Service]
+ExecStart=/bin/bash /usr/bin/project-mercury.sh
+
+[Install]
+WantedBy=graphical.target
+```
+---
+
+
+### Step 3. Running the Service Under a Specific User
+
+By default, services run as root. To have the service operate under the project_mercury account, include the User directive within the [Service] section:
+
+```
+[Service]
+ExecStart=/bin/bash /usr/bin/project-mercury.sh
+User=project_mercury
+
+
+[Install]
+WantedBy=graphical.target
+```
+
+> 💡 **Note**
+
+> Using a dedicated service account improves security by limiting the permissions available to the service.
+
+---
+
+
+### Step 4. Configuring Automatic Restarts
+
+Configure the service to restart automatically if it fails. Use the Restart directive set to on-failure and specify a 10-second delay between restart attempts using RestartSec:
+
+```
+[Service]
+ExecStart=/bin/bash /usr/bin/project-mercury.sh
+User=project_mercury
+Restart=on-failure
+RestartSec=10
+
+
+[Install]
+WantedBy=graphical.target
+```
+
+SYSTEMD logs all service events (start, stop, and failures) by default, so no extra logging configuration is required.
+
+---
+
+
+### Step 5. Defining a Dependency on the PostgreSQL Service
+
+Since the Python Django application depends on a PostgreSQL database, ensure that project-mercury.service starts only after PostgreSQL is active. To achieve this, add a [Unit] section that includes a description, a documentation URL, and the After directive to express the dependency:
+
+```
+[Unit]
+Description=Python Django for Project Mercury
+Documentation=http://wiki.caleston-dev.ca/reported
+After=postgresql.service
+
+
+[Service]
+ExecStart=/bin/bash /usr/bin/project-mercury.sh
+User=project_mercury
+Restart=on-failure
+RestartSec=10
+
+
+[Install]
+WantedBy=graphical.target
+```
+
+After updating the service unit file, reload the systemd daemon to apply the changes:
+
+```
+sudo systemctl daemon-reload
+```
+---
+
+
+### Final Service Unit File
+
+Below is the complete service unit file that fulfills all the specified requirements:
+
+```
+[Unit]
+Description=Python Django for Project Mercury
+Documentation=http://wiki.caleston-dev.ca/reported
+After=postgresql.service
+
+
+[Service]
+ExecStart=/bin/bash /usr/bin/project-mercury.sh
+User=project_mercury
+Restart=on-failure
+RestartSec=10
+
+
+[Install]
+WantedBy=graphical.target
+```
+> 💡 ***Deployment Tip***
+
+> Bob intends to replicate these steps on the development server, ensuring the Python Django application and PostgreSQL database are configured reliably and efficiently with SYSTEMD.
+
+---
+
+
+### Starting and Verifying the Service
+
+With the final configuration in place, start the service by running:
+
+```
+sudo systemctl start project-mercury.service
+```
+
+Then, confirm its status with:
+
+```
+sudo systemctl status project-mercury.service
+```
+
+This completes the configuration of the SYSTEMD service for project-mercury. Enjoy a more automated and robust service deployment!
+
