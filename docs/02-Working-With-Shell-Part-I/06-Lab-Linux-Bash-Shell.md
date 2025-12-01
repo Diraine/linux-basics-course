@@ -14,19 +14,28 @@
    ```
    echo $TERM
    ```  
-4. Create a new environment variable called **`PROJECT=MERCURY`** and make it persistent by adding the variable to the **`~/.profile`** file.
+4. User profile scripts,  such as **`~/.profile, ~/.bash_profile, ~/.bashrc,`** and others, are executed when a user logs in, allowing the setup of the environment according to personal preferences.  To make changes persistent in Unix-like operating systems, variables, aliases, and other configurations can be added to these profile files.  For example, to add a variable using the command line:
+```
+echo 'export MY_VARIABLE="example_value"' >> ~/.profile
+```
+This command appends the export statement to the end of the ~/.profile file, making the variable MY_VARIABLE persistent across sessions.  
+To add an alias, like `ll` for `ls -l,` use:
+```
+echo 'alias ll="ls -l"' >> ~/.profile
+```
+   Create a new environment variable called **`PROJECT=MERCURY`** and make it persistent by adding the variable to the **`~/.profile`** file.
    ```
    echo export PROJECT=MERCURY >> ~/.profile
    ```
-5. Which of the following directories is not part of the PATH variable?
+6. Which of the following directories is not part of the PATH variable?
    ```
    /opt/caleston-code
    ```
-6. Set an alias called **`up`** for the command **`uptime`** and make it persistent by adding to **`~/.profile`** file.
+7. Set an alias called **`up`** for the command **`uptime`** and make it persistent by adding to **`~/.profile`** file.
    ```
    echo alias up=uptime >> ~/.profile
    ```
-7. Update Bob's prompt so that it displays the date as per the format below:
+8. Update Bob's prompt so that it displays the date as per the format below:
 Example: **`[Wed Apr 22]bob@caleston-lp10:~$`**
 Make sure the change is made persistent.
    ```
