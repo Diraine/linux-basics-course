@@ -20,6 +20,8 @@
    ```
    $ type git
    ```
+   ![Alt text](https://zzvo2unfy4q7bbxx.labs.kodekloud.com/images/caleston_dir1.png)
+
 1. To create a directory
    ```
    $ mkdir /home/bob/birds
