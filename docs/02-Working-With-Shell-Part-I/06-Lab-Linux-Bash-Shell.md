@@ -27,15 +27,15 @@ echo 'alias ll="ls -l"' >> ~/.profile
    ```
    echo export PROJECT=MERCURY >> ~/.profile
    ```
-6. Which of the following directories is not part of the PATH variable?
+6. Which of the following directories is not part of the PATH variable? <br> inspect the PATH variable to see all the directories found in it with `echo $PATH`
    ```
    /opt/caleston-code
    ```
-7. Set an alias called **`up`** for the command **`uptime`** and make it persistent by adding to **`~/.profile`** file.
+8. Set an alias called **`up`** for the command **`uptime`** and make it persistent by adding to **`~/.profile`** file.
    ```
    echo alias up=uptime >> ~/.profile
    ```
-8. Update Bob's prompt so that it displays the date as per the format below:
+9. Update Bob's prompt so that it displays the date as per the format below:
 Example: **`[Wed Apr 22]bob@caleston-lp10:~$`**
 Make sure the change is made persistent.
    ```
