@@ -22,7 +22,7 @@ $ sudo systemctl get-default
 $ sudo systemctl set-default multi-user.target
 ```
 
-5.     To check what type of file is **`firefox.deb`** which is located at /root
+5. To check what type of file is **`firefox.deb`** which is located at /root
 ```
 $ sudo file /root/firefox.deb
 ```
